@@ -136,6 +136,48 @@ class Cmdline:
         doc.close()
         return "\n\n".join(text_parts)
 
+    def _save_text_as_pdf(self, text, output_path, title=None):
+        """Crea un PDF nuevo con el texto dado, envolviendo líneas y agregando páginas
+        cuando el contenido no cabe en una sola.
+        """
+        import textwrap
+
+        out_dir = os.path.dirname(output_path)
+        if out_dir:
+            os.makedirs(out_dir, exist_ok=True)
+
+        doc = pymupdf.open()
+        fontsize = 11
+        margin = 50
+        line_height = fontsize * 1.4
+        page_width, page_height = 595, 842  # tamaño A4 en puntos
+        usable_width = page_width - 2 * margin
+        usable_height = page_height - 2 * margin
+        chars_per_line = int(usable_width / (fontsize * 0.5))  # estimado para helvética
+        lines_per_page = int(usable_height / line_height)
+
+        # Envolvemos cada párrafo por separado para conservar los saltos de línea originales
+        all_lines = []
+        if title:
+            all_lines.extend([title, ""])
+        for paragraph in text.split("\n"):
+            if not paragraph.strip():
+                all_lines.append("")
+                continue
+            all_lines.extend(textwrap.wrap(paragraph, width=chars_per_line) or [""])
+
+        # Repartimos las líneas en páginas
+        for start in range(0, len(all_lines), lines_per_page):
+            page_lines = all_lines[start:start + lines_per_page]
+            page = doc.new_page(width=page_width, height=page_height)
+            y = margin + fontsize
+            for line in page_lines:
+                page.insert_text((margin, y), line, fontsize=fontsize, fontname="helv")
+                y += line_height
+
+        doc.save(output_path)
+        doc.close()
+
     def summarize_pdf(self):
         """Genera un resumen ejecutivo y los puntos clave del PDF (extractivo, 100% local, sin costo)."""
         text = self.extract_text()
@@ -148,7 +190,7 @@ class Cmdline:
         sentence_count = 8
         summary_sentences = summarizer(parser.document, sentence_count)
 
-        result_lines = ["Puntos clave:\n"]
+        result_lines = []
         for i, sentence in enumerate(summary_sentences, start=1):
             result_lines.append(f"{i}. {sentence}")
         result = "\n".join(result_lines)
@@ -156,11 +198,7 @@ class Cmdline:
         print(result)
 
         if self.args.output_path:
-            out_dir = os.path.dirname(self.args.output_path)
-            if out_dir:
-                os.makedirs(out_dir, exist_ok=True)
-            with open(self.args.output_path, "w", encoding="utf-8") as f:
-                f.write(result)
+            self._save_text_as_pdf(result, self.args.output_path, title="Puntos clave")
             print(f"Resumen guardado en {self.args.output_path}")
 
     def translate_pdf(self):
@@ -183,9 +221,5 @@ class Cmdline:
 
         translated = "\n\n".join(translated_parts)
 
-        out_dir = os.path.dirname(self.args.output_path)
-        if out_dir:
-            os.makedirs(out_dir, exist_ok=True)
-        with open(self.args.output_path, "w", encoding="utf-8") as f:
-            f.write(translated)
+        self._save_text_as_pdf(translated, self.args.output_path)
         print(f"Traducción guardada en {self.args.output_path}")

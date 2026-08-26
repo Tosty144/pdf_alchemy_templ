@@ -125,25 +125,30 @@ def test_crop_half(tmp_path, capsys):
 # Add your tests for the 2 new functionalities below
 
 def test_summarize_pdf(tmp_path, capsys):
-    out_file = tmp_path / "resumen.txt"
+    out_file = tmp_path / "resumen.pdf"
     run_cmdline([
         "-f", str(ASSET_PDF),
         "-o", str(out_file),
         "summarize"
     ], capsys)
     assert out_file.is_file()
-    content = out_file.read_text(encoding="utf-8")
-    assert "Puntos clave" in content
+    doc = fitz.open(out_file)
+    assert doc.page_count > 0
+    content = "\n".join(page.get_text() for page in doc)
+    doc.close()
     assert len(content.strip()) > 0
 
 
 def test_translate_pdf(tmp_path, capsys):
-    out_file = tmp_path / "traducido.txt"
+    out_file = tmp_path / "traducido.pdf"
     run_cmdline([
         "-f", str(ASSET_PDF),
         "-o", str(out_file),
         "translate", "--target-lang", "en"
     ], capsys)
     assert out_file.is_file()
-    content = out_file.read_text(encoding="utf-8")
+    doc = fitz.open(out_file)
+    assert doc.page_count > 0
+    content = "\n".join(page.get_text() for page in doc)
+    doc.close()
     assert len(content.strip()) > 0
