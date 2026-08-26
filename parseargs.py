@@ -62,6 +62,24 @@ class PDFArgumentParser():
             type=int
         )
 
+        # --- NUEVO: resumen ejecutivo + puntos clave ---
+        subparsers.add_parser(
+            "summarize",
+            help="Genera un resumen ejecutivo y los puntos clave del PDF usando un LLM"
+        )
+
+        # --- NUEVO: traducción contextual ---
+        translate_parser = subparsers.add_parser(
+            "translate",
+            help="Traduce el contenido del PDF a otro idioma, conservando el sentido contextual"
+        )
+        translate_parser.add_argument(
+            "--target-lang",
+            dest="target_lang",
+            required=True,
+            help="Idioma destino, ej: en, fr, pt"
+        )
+
 
     def parse_input(self, value):
        if "-" in value:
@@ -79,3 +97,4 @@ class PDFArgumentParser():
 
     def get_args(self):
         return self.parser.parse_args()
+    

@@ -31,6 +31,10 @@ def main():
         app.crop_half()
     elif app.args.command == "add":
         app.add_pdf()
+    elif app.args.command == "summarize":
+        app.summarize_pdf()
+    elif app.args.command == "translate":
+        app.translate_pdf()
     else:
         print("No arguments used, try 'uv run main.py -h'")
 

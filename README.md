@@ -34,6 +34,11 @@ uv run main.py
 # Commands
 
 > Add here the commands
+# resumen de textos 
+uv run main.py -f ./tests/assets/test_alchemy.pdf -o ./out/resumen.txt summarize
+
+# traductor 
+uv run main.py -f ./tests/assets/test_alchemy.pdf -o ./out/traducido.txt translate --target-lang en
 
 # Run tests
 

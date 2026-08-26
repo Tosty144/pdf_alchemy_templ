@@ -6,6 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "argparse>=1.4.0",
+    "deep-translator>=1.11.4",
+    "nltk>=3.10.3",
+    "numpy>=2.5.2",
     "pymupdf>=1.28.0",
     "pytest>=9.1.1",
+    "sumy>=0.13.0",
 ]
